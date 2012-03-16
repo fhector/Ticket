@@ -1,0 +1,57 @@
+10:13:00.673 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:13:01.268 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:13:01.269 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:13:01.284 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:13:01.308 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:13:23.753 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:13:23.988 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:13:23.989 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:13:23.991 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:13:24.001 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:13:25.241 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 响应类型:BasicHttpResponse,用时 1.19 秒
+10:13:25.244 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码,状态:200
+10:17:59.970 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:18:00.203 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:18:00.204 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:18:00.206 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:18:00.216 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:18:22.831 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:18:23.081 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:18:23.081 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:18:23.084 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:18:23.094 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:18:25.732 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 响应类型:BasicHttpResponse,用时 2.64 秒
+10:18:25.735 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码,状态:200
+10:20:01.622 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:20:01.860 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:20:01.860 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:20:01.862 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:20:01.872 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:20:03.349 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 响应类型:BasicHttpResponse,用时 1.48 秒
+10:20:03.352 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码,状态:200
+10:20:21.933 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:20:22.172 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:20:22.173 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:20:22.175 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:20:22.186 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:20:23.260 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 响应类型:BasicHttpResponse,用时 1.07 秒
+10:20:23.264 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码,状态:200
+10:21:36.048 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:21:36.300 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:21:36.300 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:21:36.302 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:21:36.312 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:21:38.677 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 响应类型:BasicHttpResponse,用时 2.36 秒
+10:21:38.679 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码,状态:200
+10:21:55.590 [main] DEBUG com.railway.ticket.client.config.Config -   未找到配置文件: conf.properties
+10:21:55.840 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 连接超时设置: 15 秒
+10:21:55.840 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 请求超时设置: 10 秒
+10:21:55.841 [main] DEBUG main.command.TicketBooking - DEBUG
+10:21:55.841 [main] INFO  main.command.TicketBooking - INFO
+10:21:55.842 [main] ERROR main.command.TicketBooking - ERROR
+10:21:55.844 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码
+10:21:55.853 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 网络请求:GET https://dynamic.12306.cn/otsweb/passCodeAction.do?rand=lrand HTTP/1.1
+10:21:56.638 [main] DEBUG com.railway.ticket.client.utils.HttpUtils - 响应类型:BasicHttpResponse,用时 0.78 秒
+10:21:56.641 [main] DEBUG com.railway.ticket.client.api.TicketCore - 获取登录验证码,状态:200
+10:23:41.664 [main] INFO  main.command.TicketBooking - INFO
+10:23:41.664 [main] ERROR main.command.TicketBooking - ERROR

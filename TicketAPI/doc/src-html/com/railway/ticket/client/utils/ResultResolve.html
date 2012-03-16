@@ -1,0 +1,587 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package com.railway.ticket.client.utils;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import java.util.Arrays;<a name="line.3"></a>
+<FONT color="green">004</FONT>    import java.util.LinkedList;<a name="line.4"></a>
+<FONT color="green">005</FONT>    import java.util.List;<a name="line.5"></a>
+<FONT color="green">006</FONT>    <a name="line.6"></a>
+<FONT color="green">007</FONT>    import org.htmlcleaner.TagNode;<a name="line.7"></a>
+<FONT color="green">008</FONT>    import org.slf4j.Logger;<a name="line.8"></a>
+<FONT color="green">009</FONT>    import org.slf4j.LoggerFactory;<a name="line.9"></a>
+<FONT color="green">010</FONT>    <a name="line.10"></a>
+<FONT color="green">011</FONT>    import com.alibaba.fastjson.JSONArray;<a name="line.11"></a>
+<FONT color="green">012</FONT>    import com.alibaba.fastjson.JSONObject;<a name="line.12"></a>
+<FONT color="green">013</FONT>    import com.railway.ticket.client.api.bean.Contact;<a name="line.13"></a>
+<FONT color="green">014</FONT>    import com.railway.ticket.client.api.bean.PassengerOrder;<a name="line.14"></a>
+<FONT color="green">015</FONT>    import com.railway.ticket.client.api.bean.PassengerTicket;<a name="line.15"></a>
+<FONT color="green">016</FONT>    import com.railway.ticket.client.api.bean.Result;<a name="line.16"></a>
+<FONT color="green">017</FONT>    import com.railway.ticket.client.api.bean.TicketOrder;<a name="line.17"></a>
+<FONT color="green">018</FONT>    import com.railway.ticket.client.api.bean.TrainVotes;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import com.railway.ticket.client.exception.RailWayException;<a name="line.19"></a>
+<FONT color="green">020</FONT>    <a name="line.20"></a>
+<FONT color="green">021</FONT>    /**<a name="line.21"></a>
+<FONT color="green">022</FONT>     * 将页面结果解析为Result<a name="line.22"></a>
+<FONT color="green">023</FONT>     * @author ChenXiaohong<a name="line.23"></a>
+<FONT color="green">024</FONT>     */<a name="line.24"></a>
+<FONT color="green">025</FONT>    public class ResultResolve {<a name="line.25"></a>
+<FONT color="green">026</FONT>            private static final Logger logger = LoggerFactory.getLogger(ResultResolve.class);<a name="line.26"></a>
+<FONT color="green">027</FONT>            <a name="line.27"></a>
+<FONT color="green">028</FONT>            /**<a name="line.28"></a>
+<FONT color="green">029</FONT>             * 解析登录结果<a name="line.29"></a>
+<FONT color="green">030</FONT>             * @param html<a name="line.30"></a>
+<FONT color="green">031</FONT>             * @return {@link Result}<a name="line.31"></a>
+<FONT color="green">032</FONT>             */<a name="line.32"></a>
+<FONT color="green">033</FONT>            public static Result resolveLogin(String html) {<a name="line.33"></a>
+<FONT color="green">034</FONT>                    Result result = inspecService(true, html);<a name="line.34"></a>
+<FONT color="green">035</FONT>                    String strIsLogin = HtmlUtils.getVar("isLogin", html);<a name="line.35"></a>
+<FONT color="green">036</FONT>                    if(HtmlUtils.isNotEmpty(strIsLogin)) {<a name="line.36"></a>
+<FONT color="green">037</FONT>                            if(Boolean.parseBoolean(strIsLogin)) {<a name="line.37"></a>
+<FONT color="green">038</FONT>                                    //Success<a name="line.38"></a>
+<FONT color="green">039</FONT>                                    result.setSuccess();;//<a name="line.39"></a>
+<FONT color="green">040</FONT>                                    <a name="line.40"></a>
+<FONT color="green">041</FONT>                                    JSONObject uinfo = new JSONObject();<a name="line.41"></a>
+<FONT color="green">042</FONT>                                    //用户�?<a name="line.42"></a>
+<FONT color="green">043</FONT>                                    uinfo.put("u_name", HtmlUtils.getVar("u_name", html));<a name="line.43"></a>
+<FONT color="green">044</FONT>                                    //未支付的订单<a name="line.44"></a>
+<FONT color="green">045</FONT>                                    int orderCount = Integer.parseInt(HtmlUtils.getVar("unPayOrderCount", html));<a name="line.45"></a>
+<FONT color="green">046</FONT>                                    uinfo.put("orderCount", orderCount);<a name="line.46"></a>
+<FONT color="green">047</FONT>                                    //用户�?�� Y/N(不分大小�?<a name="line.47"></a>
+<FONT color="green">048</FONT>                                    uinfo.put("isActive", "Y".equalsIgnoreCase(HtmlUtils.getVar("isActive", html)));<a name="line.48"></a>
+<FONT color="green">049</FONT>                                    //提示信息<a name="line.49"></a>
+<FONT color="green">050</FONT>                                    String[] pim_info = HtmlUtils.evaluateXPath(html, "//div[@class='pim_font']//p");<a name="line.50"></a>
+<FONT color="green">051</FONT>                                    if(uinfo.getBooleanValue("isActive"))<a name="line.51"></a>
+<FONT color="green">052</FONT>                                            pim_info[1] = "";<a name="line.52"></a>
+<FONT color="green">053</FONT>                                    if(uinfo.getIntValue("orderCount") == 0)<a name="line.53"></a>
+<FONT color="green">054</FONT>                                            pim_info[2] = "";<a name="line.54"></a>
+<FONT color="green">055</FONT>                                    result.setMsg(pim_info[0] + pim_info[1] +  pim_info[2] +  pim_info[3]);//提示信息<a name="line.55"></a>
+<FONT color="green">056</FONT>                                    result.setAttach(uinfo);<a name="line.56"></a>
+<FONT color="green">057</FONT>                            } else {<a name="line.57"></a>
+<FONT color="green">058</FONT>                                    //Failed<a name="line.58"></a>
+<FONT color="green">059</FONT>                                    String msg = HtmlUtils.getMessage(html);<a name="line.59"></a>
+<FONT color="green">060</FONT>                                    result.setCode(Result.SC_FAIL);//<a name="line.60"></a>
+<FONT color="green">061</FONT>                                    //判断错误原因<a name="line.61"></a>
+<FONT color="green">062</FONT>                                    result.setCode(Result.toCode(msg));<a name="line.62"></a>
+<FONT color="green">063</FONT>                                    result.setMsg(msg);<a name="line.63"></a>
+<FONT color="green">064</FONT>                            }<a name="line.64"></a>
+<FONT color="green">065</FONT>                    }<a name="line.65"></a>
+<FONT color="green">066</FONT>                    logger.debug("用户登录,状�?:{}", result.getCode());<a name="line.66"></a>
+<FONT color="green">067</FONT>                    return result;<a name="line.67"></a>
+<FONT color="green">068</FONT>            }<a name="line.68"></a>
+<FONT color="green">069</FONT>            <a name="line.69"></a>
+<FONT color="green">070</FONT>            /**<a name="line.70"></a>
+<FONT color="green">071</FONT>             * 解析车次查询结果<a name="line.71"></a>
+<FONT color="green">072</FONT>             * @param html<a name="line.72"></a>
+<FONT color="green">073</FONT>             * @return {@link Result}<a name="line.73"></a>
+<FONT color="green">074</FONT>             */<a name="line.74"></a>
+<FONT color="green">075</FONT>            public static Result resolveVotes (String travelDate, String html) {<a name="line.75"></a>
+<FONT color="green">076</FONT>                    Result result = inspecService(html);<a name="line.76"></a>
+<FONT color="green">077</FONT>                    //替换空格和回车符<a name="line.77"></a>
+<FONT color="green">078</FONT>                    html = html.replaceAll("&amp;nbsp;", "").replace("\\n", "$");<a name="line.78"></a>
+<FONT color="green">079</FONT>                    //分割<a name="line.79"></a>
+<FONT color="green">080</FONT>                    String[] nodes = html.split("\\$");<a name="line.80"></a>
+<FONT color="green">081</FONT>                    List&lt;TrainVotes&gt; votes = new LinkedList&lt;TrainVotes&gt;();<a name="line.81"></a>
+<FONT color="green">082</FONT>                    TrainVotes vote = null;<a name="line.82"></a>
+<FONT color="green">083</FONT>                    for (String node : nodes) {<a name="line.83"></a>
+<FONT color="green">084</FONT>                            vote = new TrainVotes();<a name="line.84"></a>
+<FONT color="green">085</FONT>                            vote.setTravelDate(travelDate);<a name="line.85"></a>
+<FONT color="green">086</FONT>                            //解析并设置余票信�?<a name="line.86"></a>
+<FONT color="green">087</FONT>                            String[] vote_arr = HtmlUtils.clean(node).getText().toString().split(",");<a name="line.87"></a>
+<FONT color="green">088</FONT>                            vote.setTrainNo(vote_arr[1]);// 车次<a name="line.88"></a>
+<FONT color="green">089</FONT>                            String codeTag = HtmlUtils.evaluateXPathTag(node, "//span[@class='base_txtdiv']")[0].getAttributeByName("onmouseover");<a name="line.89"></a>
+<FONT color="green">090</FONT>                            String[] trainCodeTag = HtmlUtils.splitByRegx(codeTag, ".*?\\('((\\w+)#(\\w+)#(\\w+))'\\)");<a name="line.90"></a>
+<FONT color="green">091</FONT>                            vote.setTrainCode(trainCodeTag[2]);// 车次编码<a name="line.91"></a>
+<FONT color="green">092</FONT>                            vote.setDepartureStationCode(trainCodeTag[3]);<a name="line.92"></a>
+<FONT color="green">093</FONT>                            vote.setArrivalStationCode(trainCodeTag[4]);<a name="line.93"></a>
+<FONT color="green">094</FONT>                            String[] depart = HtmlUtils.splitByRegx(vote_arr[2], "(.*?)(\\d{2}:\\d{2})");<a name="line.94"></a>
+<FONT color="green">095</FONT>                            vote.setDepartureStation(depart[1]);// 发站<a name="line.95"></a>
+<FONT color="green">096</FONT>                            vote.setDepartureTime(depart[2]);// 发时<a name="line.96"></a>
+<FONT color="green">097</FONT>                            String[] arrival = HtmlUtils.splitByRegx(vote_arr[3], "(.*?)(\\d{2}:\\d{2})");<a name="line.97"></a>
+<FONT color="green">098</FONT>                            vote.setArrivalStation(arrival[1]);// 到站<a name="line.98"></a>
+<FONT color="green">099</FONT>                            vote.setArrivalTime(arrival[2]);// 到时<a name="line.99"></a>
+<FONT color="green">100</FONT>                            vote.setPeriod(vote_arr[4]);// 历时<a name="line.100"></a>
+<FONT color="green">101</FONT>                            vote.setBusinessSeat(HtmlUtils.toVote(vote_arr[5]));// 商务�?<a name="line.101"></a>
+<FONT color="green">102</FONT>                            vote.setPrincipalSeat(HtmlUtils.toVote(vote_arr[6]));// 特等�?<a name="line.102"></a>
+<FONT color="green">103</FONT>                            vote.setFirstCalssSeat(HtmlUtils.toVote(vote_arr[7]));// �?���?<a name="line.103"></a>
+<FONT color="green">104</FONT>                            vote.setSeacondSeat(HtmlUtils.toVote(vote_arr[8]));// 二等�?<a name="line.104"></a>
+<FONT color="green">105</FONT>                            vote.setDeluxeSoftSleeper(HtmlUtils.toVote(vote_arr[9]));// 高级软卧<a name="line.105"></a>
+<FONT color="green">106</FONT>                            vote.setSoftSleeper(HtmlUtils.toVote(vote_arr[10]));// 软卧<a name="line.106"></a>
+<FONT color="green">107</FONT>                            vote.setHardSleeper(HtmlUtils.toVote(vote_arr[11]));// 硬卧<a name="line.107"></a>
+<FONT color="green">108</FONT>                            vote.setSoftSeat(HtmlUtils.toVote(vote_arr[12]));// 软座<a name="line.108"></a>
+<FONT color="green">109</FONT>                            vote.setHardSeat(HtmlUtils.toVote(vote_arr[13]));// 硬座<a name="line.109"></a>
+<FONT color="green">110</FONT>                            vote.setNoneSet(HtmlUtils.toVote(vote_arr[14]));// 无座<a name="line.110"></a>
+<FONT color="green">111</FONT>                            vote.setOtherSeat(HtmlUtils.toVote(vote_arr[15]));//其它<a name="line.111"></a>
+<FONT color="green">112</FONT>                            TagNode[] bookingTag = HtmlUtils.evaluateXPathTag(node, "//input[@class='yuding_u']");<a name="line.112"></a>
+<FONT color="green">113</FONT>                            if(bookingTag.length &gt; 0) {<a name="line.113"></a>
+<FONT color="green">114</FONT>                                    String tag = bookingTag[0].getAttributeByName("onclick");<a name="line.114"></a>
+<FONT color="green">115</FONT>                                    vote.setBookingInfo(HtmlUtils.splitByRegx(tag, ".*?'(.*?)'")[1]);//预订信息<a name="line.115"></a>
+<FONT color="green">116</FONT>                            }<a name="line.116"></a>
+<FONT color="green">117</FONT>                            votes.add(vote);<a name="line.117"></a>
+<FONT color="green">118</FONT>                    }<a name="line.118"></a>
+<FONT color="green">119</FONT>                    if(votes.size() == 0) {<a name="line.119"></a>
+<FONT color="green">120</FONT>                            result.setCode(Result.SC_NOCONENT);<a name="line.120"></a>
+<FONT color="green">121</FONT>                            result.setMsg("没有符合条件的车次信�?);<a name="line.121"></a>
+<FONT color="green">122</FONT>                    } else {<a name="line.122"></a>
+<FONT color="green">123</FONT>                            result.setSuccess();;<a name="line.123"></a>
+<FONT color="green">124</FONT>                            result.setMsg("查找成功");<a name="line.124"></a>
+<FONT color="green">125</FONT>                    }<a name="line.125"></a>
+<FONT color="green">126</FONT>                    result.setAttach(votes);<a name="line.126"></a>
+<FONT color="green">127</FONT>                    logger.debug("余票信息查询,状�?:{}", result.getCode());<a name="line.127"></a>
+<FONT color="green">128</FONT>                    return result;<a name="line.128"></a>
+<FONT color="green">129</FONT>            }<a name="line.129"></a>
+<FONT color="green">130</FONT>            <a name="line.130"></a>
+<FONT color="green">131</FONT>            /**<a name="line.131"></a>
+<FONT color="green">132</FONT>             * 解析列车停靠站信�?<a name="line.132"></a>
+<FONT color="green">133</FONT>             * @param html<a name="line.133"></a>
+<FONT color="green">134</FONT>             * @return {@link Result}<a name="line.134"></a>
+<FONT color="green">135</FONT>             */<a name="line.135"></a>
+<FONT color="green">136</FONT>            public static Result resolveTrainStopInfo(String html) {<a name="line.136"></a>
+<FONT color="green">137</FONT>                    Result result = inspecService(html);<a name="line.137"></a>
+<FONT color="green">138</FONT>                    JSONArray trainInfo = JSONArray.parseArray(html);<a name="line.138"></a>
+<FONT color="green">139</FONT>                    if(trainInfo.size() == 0) {<a name="line.139"></a>
+<FONT color="green">140</FONT>                            //没有内容<a name="line.140"></a>
+<FONT color="green">141</FONT>                            result.setCode(Result.SC_NOCONENT);<a name="line.141"></a>
+<FONT color="green">142</FONT>                            result.setMsg("没有查询到车次的停靠站信�?);<a name="line.142"></a>
+<FONT color="green">143</FONT>                    } else {<a name="line.143"></a>
+<FONT color="green">144</FONT>                            result.setSuccess();;<a name="line.144"></a>
+<FONT color="green">145</FONT>                            result.setMsg("查询成功");<a name="line.145"></a>
+<FONT color="green">146</FONT>                    }<a name="line.146"></a>
+<FONT color="green">147</FONT>                    result.setAttach(trainInfo);<a name="line.147"></a>
+<FONT color="green">148</FONT>                    logger.debug("列车停靠站信息查�?状�?:{}", result.getCode());<a name="line.148"></a>
+<FONT color="green">149</FONT>                    return result;<a name="line.149"></a>
+<FONT color="green">150</FONT>            }<a name="line.150"></a>
+<FONT color="green">151</FONT>            <a name="line.151"></a>
+<FONT color="green">152</FONT>            /**<a name="line.152"></a>
+<FONT color="green">153</FONT>             * 解析始发终到站之间的�?��车次信息查询结果<a name="line.153"></a>
+<FONT color="green">154</FONT>             * @param html<a name="line.154"></a>
+<FONT color="green">155</FONT>             * @return {@link Result}<a name="line.155"></a>
+<FONT color="green">156</FONT>             */<a name="line.156"></a>
+<FONT color="green">157</FONT>            public static Result resolveStationAllTrain(String html) {<a name="line.157"></a>
+<FONT color="green">158</FONT>                    Result result = inspecService(html);<a name="line.158"></a>
+<FONT color="green">159</FONT>                    List&lt;TrainVotes&gt; train_list = new LinkedList&lt;TrainVotes&gt;();<a name="line.159"></a>
+<FONT color="green">160</FONT>                    //转换为JSONObject数组<a name="line.160"></a>
+<FONT color="green">161</FONT>                    JSONArray train_arr = (JSONArray)JSONObject.parse(html);<a name="line.161"></a>
+<FONT color="green">162</FONT>                    JSONObject train_json;<a name="line.162"></a>
+<FONT color="green">163</FONT>                    TrainVotes train;<a name="line.163"></a>
+<FONT color="green">164</FONT>                    for (Object train_obj : train_arr) {<a name="line.164"></a>
+<FONT color="green">165</FONT>                            train_json = (JSONObject) train_obj;<a name="line.165"></a>
+<FONT color="green">166</FONT>                            train = new TrainVotes();<a name="line.166"></a>
+<FONT color="green">167</FONT>                            train.setTrainNo(train_json.getString("id"));<a name="line.167"></a>
+<FONT color="green">168</FONT>                            train.setTrainCode(train_json.getString("value"));<a name="line.168"></a>
+<FONT color="green">169</FONT>                            train.setDepartureStation(train_json.getString("start_station_name"));<a name="line.169"></a>
+<FONT color="green">170</FONT>                            train.setDepartureTime(train_json.getString("start_time"));<a name="line.170"></a>
+<FONT color="green">171</FONT>                            train.setArrivalStation(train_json.getString("end_station_name"));<a name="line.171"></a>
+<FONT color="green">172</FONT>                            train.setArrivalTime(train_json.getString("end_time"));<a name="line.172"></a>
+<FONT color="green">173</FONT>                            train_list.add(train);<a name="line.173"></a>
+<FONT color="green">174</FONT>                    }<a name="line.174"></a>
+<FONT color="green">175</FONT>                    result.setSuccess();<a name="line.175"></a>
+<FONT color="green">176</FONT>                    result.setAttach(train_list);<a name="line.176"></a>
+<FONT color="green">177</FONT>                    result.setMsg("查询成功");<a name="line.177"></a>
+<FONT color="green">178</FONT>                    logger.debug("始发终至列车信息查询,状�?:{}", result.getCode());<a name="line.178"></a>
+<FONT color="green">179</FONT>                    return result;<a name="line.179"></a>
+<FONT color="green">180</FONT>            }<a name="line.180"></a>
+<FONT color="green">181</FONT>            <a name="line.181"></a>
+<FONT color="green">182</FONT>            /**<a name="line.182"></a>
+<FONT color="green">183</FONT>             * 解析订单请求结果<a name="line.183"></a>
+<FONT color="green">184</FONT>             * @param html<a name="line.184"></a>
+<FONT color="green">185</FONT>             * @return {@link Result}<a name="line.185"></a>
+<FONT color="green">186</FONT>             */<a name="line.186"></a>
+<FONT color="green">187</FONT>            public static Result resolveRequestOrder(String html) {<a name="line.187"></a>
+<FONT color="green">188</FONT>                    Result result = inspecService(html);<a name="line.188"></a>
+<FONT color="green">189</FONT>                    //车次<a name="line.189"></a>
+<FONT color="green">190</FONT>                    String trainCode = HtmlUtils.getVar("station_train_code_", html);<a name="line.190"></a>
+<FONT color="green">191</FONT>                    if(HtmlUtils.isNotEmpty(trainCode)) {<a name="line.191"></a>
+<FONT color="green">192</FONT>                            result.setSuccess();;<a name="line.192"></a>
+<FONT color="green">193</FONT>                            TicketOrder order = new TicketOrder();<a name="line.193"></a>
+<FONT color="green">194</FONT>                            TagNode tagNode = HtmlUtils.clean(html);<a name="line.194"></a>
+<FONT color="green">195</FONT>                            order.setToken(HtmlUtils.getToken(tagNode));<a name="line.195"></a>
+<FONT color="green">196</FONT>                            order.setTravelDate(HtmlUtils.getDateCST(HtmlUtils.evaluateXpath(tagNode, "//input[@id='start_date']", "value")));<a name="line.196"></a>
+<FONT color="green">197</FONT>                            order.setTrainCode(HtmlUtils.evaluateXpath(tagNode, "//input[@id='station_train_code']", "value"));<a name="line.197"></a>
+<FONT color="green">198</FONT>                            order.setTrainNo(HtmlUtils.evaluateXpath(tagNode, "//input[@id='train_no']", "value"));<a name="line.198"></a>
+<FONT color="green">199</FONT>                            order.setDepartureStationCode(HtmlUtils.evaluateXpath(tagNode, "//input[@id='from_station_telecode']", "value"));<a name="line.199"></a>
+<FONT color="green">200</FONT>                            order.setArrivalStationCode(HtmlUtils.evaluateXpath(tagNode, "//input[@id='to_station_telecode']", "value"));<a name="line.200"></a>
+<FONT color="green">201</FONT>                            order.setSeatType(HtmlUtils.evaluateXpath(tagNode, "//input[@id='seat_type_code']", "value"));<a name="line.201"></a>
+<FONT color="green">202</FONT>                            order.setTicketOrderNum(HtmlUtils.evaluateXpath(tagNode, "//input[@id='ticket_type_order_num']", "value"));<a name="line.202"></a>
+<FONT color="green">203</FONT>                            order.setLevelOrderNum(HtmlUtils.evaluateXpath(tagNode, "//input[@id='bed_level_order_num']", "value"));<a name="line.203"></a>
+<FONT color="green">204</FONT>                            order.setDepartureStationTime(HtmlUtils.getShortTimeCST(HtmlUtils.evaluateXpath(tagNode, "//input[@id='orderRequest_start_time']", "value")));<a name="line.204"></a>
+<FONT color="green">205</FONT>                            order.setArrivalStationTime(HtmlUtils.getShortTimeCST(HtmlUtils.evaluateXpath(tagNode, "//input[@id='orderRequest_end_time']", "value")));<a name="line.205"></a>
+<FONT color="green">206</FONT>                            order.setDepartureStation(HtmlUtils.evaluateXpath(tagNode, "//input[@id='orderRequest_from_station_name']", "value"));<a name="line.206"></a>
+<FONT color="green">207</FONT>                            order.setArrivalStation(HtmlUtils.evaluateXpath(tagNode, "//input[@id='orderRequest_to_station_name']", "value"));<a name="line.207"></a>
+<FONT color="green">208</FONT>                            order.setCancelFlag(HtmlUtils.evaluateXpath(tagNode, "//input[@id='cancel_flag']", "value"));<a name="line.208"></a>
+<FONT color="green">209</FONT>                            order.setIdMode(HtmlUtils.evaluateXpath(tagNode, "//input[@id='orderRequest_id_mode']", "value"));<a name="line.209"></a>
+<FONT color="green">210</FONT>    //                      String lishi_ = HtmlUtils.getVar("lishi_", html);<a name="line.210"></a>
+<FONT color="green">211</FONT>    //                      String _type = HtmlUtils.evaluateXpath(tagNode, "//input[@id='_type']", "value");<a name="line.211"></a>
+<FONT color="green">212</FONT>    //                      String _train_date_str = HtmlUtils.evaluateXpath(tagNode, "//input[@id='_train_date_str']", "value");<a name="line.212"></a>
+<FONT color="green">213</FONT>    //                      String _station_train_code = HtmlUtils.evaluateXpath(tagNode, "//input[@id='_station_train_code']", "value");<a name="line.213"></a>
+<FONT color="green">214</FONT>                            <a name="line.214"></a>
+<FONT color="green">215</FONT>                            result.setAttach(order);<a name="line.215"></a>
+<FONT color="green">216</FONT>                            result.setMsg("订单请求已受�?);<a name="line.216"></a>
+<FONT color="green">217</FONT>                    } else {<a name="line.217"></a>
+<FONT color="green">218</FONT>                            result.setCode(Result.SC_FAIL);<a name="line.218"></a>
+<FONT color="green">219</FONT>                            result.setMsg(HtmlUtils.getMessage(html));<a name="line.219"></a>
+<FONT color="green">220</FONT>                    }<a name="line.220"></a>
+<FONT color="green">221</FONT>                    logger.debug("确认订单,状�?:{}", result.getCode());<a name="line.221"></a>
+<FONT color="green">222</FONT>                    return result;<a name="line.222"></a>
+<FONT color="green">223</FONT>            }<a name="line.223"></a>
+<FONT color="green">224</FONT>            <a name="line.224"></a>
+<FONT color="green">225</FONT>            /**<a name="line.225"></a>
+<FONT color="green">226</FONT>             * 解析订单提交结果<a name="line.226"></a>
+<FONT color="green">227</FONT>             * @param html<a name="line.227"></a>
+<FONT color="green">228</FONT>             * @return {@link Result}<a name="line.228"></a>
+<FONT color="green">229</FONT>             */<a name="line.229"></a>
+<FONT color="green">230</FONT>            public static Result resolveTakeOrder(String html) {<a name="line.230"></a>
+<FONT color="green">231</FONT>                    Result result = inspecService(html);<a name="line.231"></a>
+<FONT color="green">232</FONT>                    int ticketNum = Integer.parseInt(HtmlUtils.getVar("successTicketNum", html, "0"));<a name="line.232"></a>
+<FONT color="green">233</FONT>                    if(ticketNum &gt; 0) {<a name="line.233"></a>
+<FONT color="green">234</FONT>                            result.setSuccess();;<a name="line.234"></a>
+<FONT color="green">235</FONT>                            TagNode docTagNode = HtmlUtils.clean(html);<a name="line.235"></a>
+<FONT color="green">236</FONT>                            <a name="line.236"></a>
+<FONT color="green">237</FONT>                            PassengerOrder order = new PassengerOrder();    //订单信息<a name="line.237"></a>
+<FONT color="green">238</FONT>                            int requiredNum = Integer.parseInt(HtmlUtils.getVar("requiredNum", html, "0"));<a name="line.238"></a>
+<FONT color="green">239</FONT>                            long loseTime = Long.parseLong(HtmlUtils.getVar("loseTime", html, "0"));<a name="line.239"></a>
+<FONT color="green">240</FONT>                            long beginTime = Long.parseLong(HtmlUtils.getVar("beginTime", html, "0"));<a name="line.240"></a>
+<FONT color="green">241</FONT>                            <a name="line.241"></a>
+<FONT color="green">242</FONT>                            order.setToken(HtmlUtils.getToken(docTagNode));<a name="line.242"></a>
+<FONT color="green">243</FONT>                            order.setSequenceNo(HtmlUtils.evaluateXpath(docTagNode, "//input[@name='sequence_no']", "value"));<a name="line.243"></a>
+<FONT color="green">244</FONT>                            //总票�?<a name="line.244"></a>
+<FONT color="green">245</FONT>                            String price = HtmlUtils.evaluateXPath(docTagNode, "//div[@id='Ticket']//ul[@id='Num']//li[@class='red']")[0];<a name="line.245"></a>
+<FONT color="green">246</FONT>                            order.setTotalPrice(Float.parseFloat(price.replace("总票价：", "").replace("�?, "")));<a name="line.246"></a>
+<FONT color="green">247</FONT>                            order.setBatchNo(HtmlUtils.evaluateXpath(docTagNode, "//input[@name='batch_no']", "value"));<a name="line.247"></a>
+<FONT color="green">248</FONT>                            order.setTicketNum(ticketNum);<a name="line.248"></a>
+<FONT color="green">249</FONT>                            order.setRequiredNum(requiredNum);<a name="line.249"></a>
+<FONT color="green">250</FONT>                            order.setLoseTime(loseTime);<a name="line.250"></a>
+<FONT color="green">251</FONT>                            order.setBeginTime(beginTime);<a name="line.251"></a>
+<FONT color="green">252</FONT>                            order.setCancelFlag(HtmlUtils.evaluateXpath(docTagNode, "//input[@name='orderRequest.cancel_flag']", "value"));<a name="line.252"></a>
+<FONT color="green">253</FONT>                            //支付Form信息<a name="line.253"></a>
+<FONT color="green">254</FONT>                            TagNode[] epayForm = HtmlUtils.evaluateXPathTag(docTagNode, "//form[@id='epayForm']");<a name="line.254"></a>
+<FONT color="green">255</FONT>                            order.setPayGateWay(epayForm[0].getAttributeByName("action"));<a name="line.255"></a>
+<FONT color="green">256</FONT>                            order.setPayGateWayField(HtmlUtils.getInnerHtml(((TagNode)epayForm[0])));<a name="line.256"></a>
+<FONT color="green">257</FONT>                            //车票信息<a name="line.257"></a>
+<FONT color="green">258</FONT>                            TagNode[] trObjTags = HtmlUtils.evaluateXPathTag(docTagNode, "//table[@class='table_list']//tr");<a name="line.258"></a>
+<FONT color="green">259</FONT>                            trObjTags = Arrays.copyOfRange(trObjTags, 2, trObjTags.length - 1);<a name="line.259"></a>
+<FONT color="green">260</FONT>                            <a name="line.260"></a>
+<FONT color="green">261</FONT>                            List&lt;PassengerTicket&gt; tickets = new LinkedList&lt;PassengerTicket&gt;();<a name="line.261"></a>
+<FONT color="green">262</FONT>                            PassengerTicket ticket = null;<a name="line.262"></a>
+<FONT color="green">263</FONT>                            for (TagNode ticketTagNode : trObjTags) {<a name="line.263"></a>
+<FONT color="green">264</FONT>                                    TagNode[] tdObjTag = HtmlUtils.evaluateXPathTag(ticketTagNode, "//td");<a name="line.264"></a>
+<FONT color="green">265</FONT>                                    ticket = new PassengerTicket();<a name="line.265"></a>
+<FONT color="green">266</FONT>                                    ticket.setPassengerName(HtmlUtils.getTagText(tdObjTag[0]));// 姓名<a name="line.266"></a>
+<FONT color="green">267</FONT>                                    ticket.setIdentityType(HtmlUtils.getTagText(tdObjTag[1]));// 证件类型<a name="line.267"></a>
+<FONT color="green">268</FONT>                                    ticket.setIdentityNum(HtmlUtils.getTagText(tdObjTag[2]));// 证件�?<a name="line.268"></a>
+<FONT color="green">269</FONT>                                    ticket.setDepartureDate(HtmlUtils.getDateCST(HtmlUtils.getTagText(tdObjTag[3])));// 发车日期<a name="line.269"></a>
+<FONT color="green">270</FONT>                                    String[] departureInfo = HtmlUtils.evaluateXPath((TagNode)tdObjTag[4], "//p");<a name="line.270"></a>
+<FONT color="green">271</FONT>                                    ticket.setDepartureStation(departureInfo[0]); // 出发�?<a name="line.271"></a>
+<FONT color="green">272</FONT>                                    ticket.setDepartureTime(HtmlUtils.getTimeCST(departureInfo[1].replace("�?, "")));<a name="line.272"></a>
+<FONT color="green">273</FONT>                                    String[] arrivalInfo = HtmlUtils.evaluateXPath((TagNode)tdObjTag[5], "//p");<a name="line.273"></a>
+<FONT color="green">274</FONT>                                    ticket.setArrivalStation(arrivalInfo[0]); // 目的�?<a name="line.274"></a>
+<FONT color="green">275</FONT>                                    ticket.setArrivalTime(HtmlUtils.getTimeCST(arrivalInfo[1].replace("�?, "")));<a name="line.275"></a>
+<FONT color="green">276</FONT>                                    ticket.setTicketType(HtmlUtils.getTagText(tdObjTag[6]));// 票种<a name="line.276"></a>
+<FONT color="green">277</FONT>                                    ticket.setTrainNo(HtmlUtils.getTagText(tdObjTag[7])); // 车次<a name="line.277"></a>
+<FONT color="green">278</FONT>                                    ticket.setSeatType(HtmlUtils.getTagText(tdObjTag[8])); // 席别<a name="line.278"></a>
+<FONT color="green">279</FONT>                                    ticket.setCarNo(HtmlUtils.getTagText(tdObjTag[9])); // 车厢<a name="line.279"></a>
+<FONT color="green">280</FONT>                                    ticket.setSeatNumber(HtmlUtils.getTagText(tdObjTag[10])); // 席位�?<a name="line.280"></a>
+<FONT color="green">281</FONT>                                    ticket.setFare(HtmlUtils.getTagText(tdObjTag[11])); // 票价（元�?<a name="line.281"></a>
+<FONT color="green">282</FONT>                                    tickets.add(ticket);<a name="line.282"></a>
+<FONT color="green">283</FONT>                            }<a name="line.283"></a>
+<FONT color="green">284</FONT>                            order.setTickets(tickets);<a name="line.284"></a>
+<FONT color="green">285</FONT>                            result.setAttach(order);<a name="line.285"></a>
+<FONT color="green">286</FONT>                            result.setMsg(HtmlUtils.getTagText(HtmlUtils.evaluateXPathTag(docTagNode, "//div[@class='wc_fontn']//p[@class='f_blue']")[0]));<a name="line.286"></a>
+<FONT color="green">287</FONT>                    } else {<a name="line.287"></a>
+<FONT color="green">288</FONT>                            String msg = HtmlUtils.getMessage(html);<a name="line.288"></a>
+<FONT color="green">289</FONT>                            result.setMsg(msg);<a name="line.289"></a>
+<FONT color="green">290</FONT>                            result.setCode(Result.toCode(msg));<a name="line.290"></a>
+<FONT color="green">291</FONT>                    }<a name="line.291"></a>
+<FONT color="green">292</FONT>                    logger.debug("提交订单,状�?:{}", result.getCode());<a name="line.292"></a>
+<FONT color="green">293</FONT>                    return result;<a name="line.293"></a>
+<FONT color="green">294</FONT>            }<a name="line.294"></a>
+<FONT color="green">295</FONT>            <a name="line.295"></a>
+<FONT color="green">296</FONT>            /**<a name="line.296"></a>
+<FONT color="green">297</FONT>             * 解析取消订单的结�?<a name="line.297"></a>
+<FONT color="green">298</FONT>             * @param html<a name="line.298"></a>
+<FONT color="green">299</FONT>             * @return {@link Result}<a name="line.299"></a>
+<FONT color="green">300</FONT>             */<a name="line.300"></a>
+<FONT color="green">301</FONT>            public static Result resolveCancelOrder(String html) {<a name="line.301"></a>
+<FONT color="green">302</FONT>                    Result result = inspecService(html);<a name="line.302"></a>
+<FONT color="green">303</FONT>                    String msg = HtmlUtils.getMessage(html);<a name="line.303"></a>
+<FONT color="green">304</FONT>                    result.setMsg(msg);<a name="line.304"></a>
+<FONT color="green">305</FONT>                    if(msg.contains("取消订单成功")) {<a name="line.305"></a>
+<FONT color="green">306</FONT>                            result.setSuccess();;<a name="line.306"></a>
+<FONT color="green">307</FONT>                            result.setMsg("订单:" + HtmlUtils.evaluateXpath(html, "//input[@name='sequence_no']", "value") + "取消成功!");<a name="line.307"></a>
+<FONT color="green">308</FONT>                    } else {<a name="line.308"></a>
+<FONT color="green">309</FONT>                            result.setCode(Result.SC_FAIL);<a name="line.309"></a>
+<FONT color="green">310</FONT>                    }<a name="line.310"></a>
+<FONT color="green">311</FONT>                    logger.debug("取消订单,状�?:{}", result.getCode());<a name="line.311"></a>
+<FONT color="green">312</FONT>                    return result;<a name="line.312"></a>
+<FONT color="green">313</FONT>            }<a name="line.313"></a>
+<FONT color="green">314</FONT>            <a name="line.314"></a>
+<FONT color="green">315</FONT>            /**<a name="line.315"></a>
+<FONT color="green">316</FONT>             * 解析未完成的订单查询结果<a name="line.316"></a>
+<FONT color="green">317</FONT>             * @param html<a name="line.317"></a>
+<FONT color="green">318</FONT>             * @return {@link Result}<a name="line.318"></a>
+<FONT color="green">319</FONT>             */<a name="line.319"></a>
+<FONT color="green">320</FONT>            public static Result resolveNotCompleteOrder(String html) {<a name="line.320"></a>
+<FONT color="green">321</FONT>                    Result result = inspecService(html);<a name="line.321"></a>
+<FONT color="green">322</FONT>                    //总价,时间<a name="line.322"></a>
+<FONT color="green">323</FONT>                    int size = Integer.parseInt(HtmlUtils.getVar("size", html, "0"));<a name="line.323"></a>
+<FONT color="green">324</FONT>                    if(size &gt; 0) {<a name="line.324"></a>
+<FONT color="green">325</FONT>                            result.setSuccess();;<a name="line.325"></a>
+<FONT color="green">326</FONT>                            TagNode[] jdanTag = HtmlUtils.evaluateXPathTag(html, "//div[@class='jdan_tfont']//ul//li");<a name="line.326"></a>
+<FONT color="green">327</FONT>                            int totalFare = Integer.parseInt(jdanTag[1].getText().toString().replace("总张数：", ""));<a name="line.327"></a>
+<FONT color="green">328</FONT>                            String orderTime = HtmlUtils.getDateTimeCST(jdanTag[0].getText().toString().replace("订单时间�?", ""));<a name="line.328"></a>
+<FONT color="green">329</FONT>                            String toF =  HtmlUtils.getMatcherValue(html, "�?\\s*票\\s*�?\\s(.*?)\\(")[0];<a name="line.329"></a>
+<FONT color="green">330</FONT>                            result.setMsg(orderTime + "," + totalFare + (HtmlUtils.isNotEmpty(toF) ? "," + toF : ""));<a name="line.330"></a>
+<FONT color="green">331</FONT>                            TagNode[] ticketTags = HtmlUtils.evaluateXPathTag(html, "//table[@class='table_clist']//tr");<a name="line.331"></a>
+<FONT color="green">332</FONT>                            if(ticketTags.length == 0) {<a name="line.332"></a>
+<FONT color="green">333</FONT>                                    result.setCode(Result.SC_FAIL);<a name="line.333"></a>
+<FONT color="green">334</FONT>                                    result.setMsg(HtmlUtils.evaluateXPath(html, "//div[@class='sign_suc']")[0]);<a name="line.334"></a>
+<FONT color="green">335</FONT>                                    return result;<a name="line.335"></a>
+<FONT color="green">336</FONT>                            }<a name="line.336"></a>
+<FONT color="green">337</FONT>                            ticketTags = Arrays.copyOfRange(ticketTags, 1, ticketTags.length - 1);<a name="line.337"></a>
+<FONT color="green">338</FONT>                            List&lt;PassengerTicket&gt; tickets = new LinkedList&lt;PassengerTicket&gt;();<a name="line.338"></a>
+<FONT color="green">339</FONT>                            for (TagNode tagNode : ticketTags) {<a name="line.339"></a>
+<FONT color="green">340</FONT>                                    PassengerTicket passenger = new PassengerTicket();<a name="line.340"></a>
+<FONT color="green">341</FONT>                                    <a name="line.341"></a>
+<FONT color="green">342</FONT>                                    TagNode[] ticket = HtmlUtils.evaluateXPathTag(tagNode, "//td");<a name="line.342"></a>
+<FONT color="green">343</FONT>                                    String[] trainTag = ticket[0].getText().toString().trim().replaceAll("[,]?\\s{10,}", "|").split("\\|");<a name="line.343"></a>
+<FONT color="green">344</FONT>                                    <a name="line.344"></a>
+<FONT color="green">345</FONT>                                    passenger.setDepartureDate(HtmlUtils.getDateCST(trainTag[0])); // 发车日期<a name="line.345"></a>
+<FONT color="green">346</FONT>                                    passenger.setTrainNo(trainTag[1]); // 车次<a name="line.346"></a>
+<FONT color="green">347</FONT>                                    passenger.setDepartureStation(trainTag[2].split("�?)[0]); // 出发�?<a name="line.347"></a>
+<FONT color="green">348</FONT>                                    passenger.setArrivalStation(trainTag[2].split("�?)[1]); // 目的�?<a name="line.348"></a>
+<FONT color="green">349</FONT>                                    passenger.setDepartureTime(HtmlUtils.getTimeCST(trainTag[3].replace("�?, ""))); //出发时间<a name="line.349"></a>
+<FONT color="green">350</FONT>                                    trainTag = ticket[1].getText().toString().trim().replaceAll("[,]?\\s{10,}", "|").split("\\|");<a name="line.350"></a>
+<FONT color="green">351</FONT>                                    passenger.setCarNo(trainTag[0]); // 车厢<a name="line.351"></a>
+<FONT color="green">352</FONT>                                    passenger.setSeatNumber(trainTag[1]); // 席位�?<a name="line.352"></a>
+<FONT color="green">353</FONT>                                    passenger.setSeatType(trainTag[2]); // 席别<a name="line.353"></a>
+<FONT color="green">354</FONT>                                    passenger.setTicketType(trainTag[3]); // 票种<a name="line.354"></a>
+<FONT color="green">355</FONT>                                    passenger.setFare(trainTag[4].replace("�?, "")); // 票价（元�?<a name="line.355"></a>
+<FONT color="green">356</FONT>                                    trainTag = ticket[2].getText().toString().trim().replaceAll("[,]?\\s{10,}", "|").split("\\|");<a name="line.356"></a>
+<FONT color="green">357</FONT>                                    passenger.setPassengerName(trainTag[0]); // 姓名<a name="line.357"></a>
+<FONT color="green">358</FONT>                                    passenger.setIdentityType(trainTag[1]); // 证件类型<a name="line.358"></a>
+<FONT color="green">359</FONT>                                    trainTag = ticket[3].getText().toString().trim().replaceAll("[,]?\\s{10,}", "|").split("\\|");<a name="line.359"></a>
+<FONT color="green">360</FONT>                                    passenger.setPaymentStatus(trainTag[0]); //支付状�? <a name="line.360"></a>
+<FONT color="green">361</FONT>                                    tickets.add(passenger);<a name="line.361"></a>
+<FONT color="green">362</FONT>                            }<a name="line.362"></a>
+<FONT color="green">363</FONT>                            result.setAttach(tickets);<a name="line.363"></a>
+<FONT color="green">364</FONT>                    } else {<a name="line.364"></a>
+<FONT color="green">365</FONT>                            result.setCode(Result.SC_NOCONENT);<a name="line.365"></a>
+<FONT color="green">366</FONT>                            result.setMsg(HtmlUtils.evaluateXPath(html, "//div[@class='sign_suc']")[0]);<a name="line.366"></a>
+<FONT color="green">367</FONT>                    }<a name="line.367"></a>
+<FONT color="green">368</FONT>                    logger.debug("查询未完成的订单,状�?:{}", result.getCode());<a name="line.368"></a>
+<FONT color="green">369</FONT>                    return result;<a name="line.369"></a>
+<FONT color="green">370</FONT>            }<a name="line.370"></a>
+<FONT color="green">371</FONT>            <a name="line.371"></a>
+<FONT color="green">372</FONT>            /** 解析联系人查询结�?<a name="line.372"></a>
+<FONT color="green">373</FONT>             * @param html<a name="line.373"></a>
+<FONT color="green">374</FONT>             * @return {@link Result#getAttach()}获取联系人{@link List}<a name="line.374"></a>
+<FONT color="green">375</FONT>             */<a name="line.375"></a>
+<FONT color="green">376</FONT>            public static Result resolveContactList(String html) {<a name="line.376"></a>
+<FONT color="green">377</FONT>                    Result result = inspecService(html);<a name="line.377"></a>
+<FONT color="green">378</FONT>                    List&lt;Contact&gt; contacts = new LinkedList&lt;Contact&gt;();<a name="line.378"></a>
+<FONT color="green">379</FONT>                    //将结果解析为JSONObject数组<a name="line.379"></a>
+<FONT color="green">380</FONT>                    JSONObject contact_obj = JSONObject.parseObject(html);<a name="line.380"></a>
+<FONT color="green">381</FONT>                    JSONArray contact_arr = contact_obj.getJSONArray("rows");<a name="line.381"></a>
+<FONT color="green">382</FONT>                    //读取信息并转换为Contact对象<a name="line.382"></a>
+<FONT color="green">383</FONT>                    for (Object contact_object : contact_arr) {<a name="line.383"></a>
+<FONT color="green">384</FONT>                            Contact contact = new Contact();<a name="line.384"></a>
+<FONT color="green">385</FONT>                            JSONObject cont_obj = (JSONObject) contact_object;<a name="line.385"></a>
+<FONT color="green">386</FONT>                            contact.setCode(cont_obj.getString("code"));<a name="line.386"></a>
+<FONT color="green">387</FONT>                            contact.setName(cont_obj.getString("passenger_name"));<a name="line.387"></a>
+<FONT color="green">388</FONT>                            contact.setGender(cont_obj.getString("sex_code")); //F M<a name="line.388"></a>
+<FONT color="green">389</FONT>                            JSONObject bornDate = JSONObject.parseObject(cont_obj.getString("born_date"));<a name="line.389"></a>
+<FONT color="green">390</FONT>                            contact.setBornDate(HtmlUtils.formatDate(bornDate.getString("time")));<a name="line.390"></a>
+<FONT color="green">391</FONT>                            contact.setCountryCode(cont_obj.getString("country_code"));<a name="line.391"></a>
+<FONT color="green">392</FONT>                            contact.setCardType(cont_obj.getString("passenger_type"));<a name="line.392"></a>
+<FONT color="green">393</FONT>                            contact.setCardNo(cont_obj.getString("passenger_id_no"));<a name="line.393"></a>
+<FONT color="green">394</FONT>                            contact.setPsgTypeCode(cont_obj.getString("passenger_id_type_code"));<a name="line.394"></a>
+<FONT color="green">395</FONT>                            contact.setMobileNo(cont_obj.getString("mobile_no"));<a name="line.395"></a>
+<FONT color="green">396</FONT>                            contact.setPhoneNo(cont_obj.getString("phone_no"));<a name="line.396"></a>
+<FONT color="green">397</FONT>                            contact.setEmail(cont_obj.getString("email"));<a name="line.397"></a>
+<FONT color="green">398</FONT>                            contact.setAddress(cont_obj.getString("address"));<a name="line.398"></a>
+<FONT color="green">399</FONT>                            contact.setPostalCode(cont_obj.getString("postalcode"));<a name="line.399"></a>
+<FONT color="green">400</FONT>                            contacts.add(contact);<a name="line.400"></a>
+<FONT color="green">401</FONT>                    }<a name="line.401"></a>
+<FONT color="green">402</FONT>                    result.setSuccess();<a name="line.402"></a>
+<FONT color="green">403</FONT>                    result.setAttach(contacts);<a name="line.403"></a>
+<FONT color="green">404</FONT>                    result.setMsg("查询成功");<a name="line.404"></a>
+<FONT color="green">405</FONT>                    logger.debug("查询联系人信�?状�?:{}", result.getCode());<a name="line.405"></a>
+<FONT color="green">406</FONT>                    return result;<a name="line.406"></a>
+<FONT color="green">407</FONT>            }<a name="line.407"></a>
+<FONT color="green">408</FONT>            <a name="line.408"></a>
+<FONT color="green">409</FONT>            /**<a name="line.409"></a>
+<FONT color="green">410</FONT>             * 解析联系人添加结�?<a name="line.410"></a>
+<FONT color="green">411</FONT>             * @param html<a name="line.411"></a>
+<FONT color="green">412</FONT>             * @return {@link Result}<a name="line.412"></a>
+<FONT color="green">413</FONT>             */<a name="line.413"></a>
+<FONT color="green">414</FONT>            public static Result resolveContactCreate(String html) {<a name="line.414"></a>
+<FONT color="green">415</FONT>                    Result result = inspecService(html);<a name="line.415"></a>
+<FONT color="green">416</FONT>                    String msg = HtmlUtils.getMessage(html);<a name="line.416"></a>
+<FONT color="green">417</FONT>                    result.setMsg(msg);<a name="line.417"></a>
+<FONT color="green">418</FONT>                    if(msg.contains("成功")) {<a name="line.418"></a>
+<FONT color="green">419</FONT>                            result.setSuccess();<a name="line.419"></a>
+<FONT color="green">420</FONT>                    } else {<a name="line.420"></a>
+<FONT color="green">421</FONT>                            result.setCode(Result.SC_FAIL);<a name="line.421"></a>
+<FONT color="green">422</FONT>                    }<a name="line.422"></a>
+<FONT color="green">423</FONT>                    logger.debug("添加联系�?状�?:{}", result.getCode());<a name="line.423"></a>
+<FONT color="green">424</FONT>                    return result;<a name="line.424"></a>
+<FONT color="green">425</FONT>            }<a name="line.425"></a>
+<FONT color="green">426</FONT>            <a name="line.426"></a>
+<FONT color="green">427</FONT>            /**<a name="line.427"></a>
+<FONT color="green">428</FONT>             * 解析联系人删除结�?<a name="line.428"></a>
+<FONT color="green">429</FONT>             * @param html<a name="line.429"></a>
+<FONT color="green">430</FONT>             * @return {@link Result}<a name="line.430"></a>
+<FONT color="green">431</FONT>             */<a name="line.431"></a>
+<FONT color="green">432</FONT>            public static Result resolveContactDelete(String html) {<a name="line.432"></a>
+<FONT color="green">433</FONT>                    Result result = inspecService(html);<a name="line.433"></a>
+<FONT color="green">434</FONT>                    String msg = HtmlUtils.getMessage(html);<a name="line.434"></a>
+<FONT color="green">435</FONT>                    result.setMsg(msg);<a name="line.435"></a>
+<FONT color="green">436</FONT>                    if(msg.contains("成功")) {<a name="line.436"></a>
+<FONT color="green">437</FONT>                            result.setSuccess();<a name="line.437"></a>
+<FONT color="green">438</FONT>                    } else {<a name="line.438"></a>
+<FONT color="green">439</FONT>                            result.setCode(Result.SC_FAIL);<a name="line.439"></a>
+<FONT color="green">440</FONT>                    }<a name="line.440"></a>
+<FONT color="green">441</FONT>                    logger.debug("删除联系�?状�?:{}", result.getCode());<a name="line.441"></a>
+<FONT color="green">442</FONT>                    return result;<a name="line.442"></a>
+<FONT color="green">443</FONT>            }<a name="line.443"></a>
+<FONT color="green">444</FONT>            <a name="line.444"></a>
+<FONT color="green">445</FONT>            /**<a name="line.445"></a>
+<FONT color="green">446</FONT>             * 解析密码修改结果<a name="line.446"></a>
+<FONT color="green">447</FONT>             * @param html<a name="line.447"></a>
+<FONT color="green">448</FONT>             * @return {@link Result}<a name="line.448"></a>
+<FONT color="green">449</FONT>             */<a name="line.449"></a>
+<FONT color="green">450</FONT>            public static Result resolveChangePassword(String html) {<a name="line.450"></a>
+<FONT color="green">451</FONT>                    Result result = inspecService(html);<a name="line.451"></a>
+<FONT color="green">452</FONT>                    String msg = HtmlUtils.getMessage(html);<a name="line.452"></a>
+<FONT color="green">453</FONT>                    result.setMsg(msg);<a name="line.453"></a>
+<FONT color="green">454</FONT>                    if(msg.contains("成功")) {<a name="line.454"></a>
+<FONT color="green">455</FONT>                            result.setSuccess();<a name="line.455"></a>
+<FONT color="green">456</FONT>                    } else {<a name="line.456"></a>
+<FONT color="green">457</FONT>                            result.setCode(Result.SC_FAIL);<a name="line.457"></a>
+<FONT color="green">458</FONT>                    }<a name="line.458"></a>
+<FONT color="green">459</FONT>                    logger.debug("删除联系�?状�?:{}", result.getCode());<a name="line.459"></a>
+<FONT color="green">460</FONT>                    return result;<a name="line.460"></a>
+<FONT color="green">461</FONT>            }<a name="line.461"></a>
+<FONT color="green">462</FONT>            <a name="line.462"></a>
+<FONT color="green">463</FONT>            <a name="line.463"></a>
+<FONT color="green">464</FONT>            /** �?��服务是否可用.<a name="line.464"></a>
+<FONT color="green">465</FONT>             * �?��只在登录时进行调用该方法<a name="line.465"></a>
+<FONT color="green">466</FONT>             * @param isLogin 是否为登�?<a name="line.466"></a>
+<FONT color="green">467</FONT>             * @param html<a name="line.467"></a>
+<FONT color="green">468</FONT>             * @return {@link Result}<a name="line.468"></a>
+<FONT color="green">469</FONT>             */<a name="line.469"></a>
+<FONT color="green">470</FONT>            public static Result inspecService(boolean isLogin, String html) {<a name="line.470"></a>
+<FONT color="green">471</FONT>                    Result result = new Result();<a name="line.471"></a>
+<FONT color="green">472</FONT>                    result.setCode(Result.SC_NOCONENT);<a name="line.472"></a>
+<FONT color="green">473</FONT>                    //判断是否为维护时�?<a name="line.473"></a>
+<FONT color="green">474</FONT>                    String[] msgs = HtmlUtils.evaluateXPath(html, "//div[@class='sign_suc']");<a name="line.474"></a>
+<FONT color="green">475</FONT>                    if(msgs.length &gt; 0) {<a name="line.475"></a>
+<FONT color="green">476</FONT>                            result.setCode(Result.SC_UNSERVICE);    //维护<a name="line.476"></a>
+<FONT color="green">477</FONT>                            result.setMsg(msgs[0]);<a name="line.477"></a>
+<FONT color="green">478</FONT>                    }<a name="line.478"></a>
+<FONT color="green">479</FONT>                    //判断是否登录<a name="line.479"></a>
+<FONT color="green">480</FONT>                    String strIsLogin = HtmlUtils.getVar("isLogin", html);<a name="line.480"></a>
+<FONT color="green">481</FONT>                    if(HtmlUtils.isNotEmpty(strIsLogin)) {<a name="line.481"></a>
+<FONT color="green">482</FONT>                            boolean stIsLogin = Boolean.parseBoolean(strIsLogin);<a name="line.482"></a>
+<FONT color="green">483</FONT>                            if(!stIsLogin) {<a name="line.483"></a>
+<FONT color="green">484</FONT>                                    result.setCode(Result.SC_UNAUTHORIZED);<a name="line.484"></a>
+<FONT color="green">485</FONT>                                    result.setMsg(HtmlUtils.getMessage(html));<a name="line.485"></a>
+<FONT color="green">486</FONT>                            }<a name="line.486"></a>
+<FONT color="green">487</FONT>                    }<a name="line.487"></a>
+<FONT color="green">488</FONT>                    if(!isLogin) {<a name="line.488"></a>
+<FONT color="green">489</FONT>                            //判断是否应该抛出异常提醒<a name="line.489"></a>
+<FONT color="green">490</FONT>                            if(result.getCode() == Result.SC_UNSERVICE || result.getCode() == Result.SC_UNAUTHORIZED) {<a name="line.490"></a>
+<FONT color="green">491</FONT>                                    throw new RailWayException(result.getMsg());<a name="line.491"></a>
+<FONT color="green">492</FONT>                            }<a name="line.492"></a>
+<FONT color="green">493</FONT>                    }<a name="line.493"></a>
+<FONT color="green">494</FONT>                    return result;<a name="line.494"></a>
+<FONT color="green">495</FONT>            }<a name="line.495"></a>
+<FONT color="green">496</FONT>            <a name="line.496"></a>
+<FONT color="green">497</FONT>            /**<a name="line.497"></a>
+<FONT color="green">498</FONT>             * �?��服务是否可用<a name="line.498"></a>
+<FONT color="green">499</FONT>             * @param html<a name="line.499"></a>
+<FONT color="green">500</FONT>             * @return {@link Result}<a name="line.500"></a>
+<FONT color="green">501</FONT>             */<a name="line.501"></a>
+<FONT color="green">502</FONT>            public static Result inspecService(String html) {<a name="line.502"></a>
+<FONT color="green">503</FONT>                    return inspecService(false, html);<a name="line.503"></a>
+<FONT color="green">504</FONT>            }<a name="line.504"></a>
+<FONT color="green">505</FONT>            <a name="line.505"></a>
+<FONT color="green">506</FONT>            /** 是否为成�?<a name="line.506"></a>
+<FONT color="green">507</FONT>             * @param result<a name="line.507"></a>
+<FONT color="green">508</FONT>             * @return {@link Boolean}<a name="line.508"></a>
+<FONT color="green">509</FONT>             */<a name="line.509"></a>
+<FONT color="green">510</FONT>            public static boolean isSuccess(Result result) {<a name="line.510"></a>
+<FONT color="green">511</FONT>                    return result.isSuccess();<a name="line.511"></a>
+<FONT color="green">512</FONT>            }<a name="line.512"></a>
+<FONT color="green">513</FONT>            <a name="line.513"></a>
+<FONT color="green">514</FONT>            /**<a name="line.514"></a>
+<FONT color="green">515</FONT>             * @param result<a name="line.515"></a>
+<FONT color="green">516</FONT>             * @return {@link Boolean}<a name="line.516"></a>
+<FONT color="green">517</FONT>             */<a name="line.517"></a>
+<FONT color="green">518</FONT>            public static boolean isSuccess(JSONObject result) {<a name="line.518"></a>
+<FONT color="green">519</FONT>                    return isSuccess(JSONObject.toJavaObject(result, Result.class));<a name="line.519"></a>
+<FONT color="green">520</FONT>            }<a name="line.520"></a>
+<FONT color="green">521</FONT>    }<a name="line.521"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

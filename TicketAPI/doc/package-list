@@ -1,0 +1,5 @@
+com.railway.ticket.client.api
+com.railway.ticket.client.api.bean
+com.railway.ticket.client.config
+com.railway.ticket.client.exception
+com.railway.ticket.client.utils
